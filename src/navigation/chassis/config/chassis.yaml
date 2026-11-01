@@ -1,0 +1,43 @@
+chassis_bridge:
+  ros__parameters:
+    # binary = MiniPC VisionToGimbal frame (0x55 ... 0xFF, 20 bytes)
+    # ascii  = legacy $CMD,... protocol
+    protocol: binary
+    feedback_protocol: none     # none | ascii ($ODOM lines)
+
+    use_serial: true            # false -> pure simulation (no hardware)
+    # 实车不要静默降级：串口打不开就直接报错，避免“导航在动、车不动”
+    fallback_to_fake: false
+    # 首选 udev 固定别名；不存在时自动按 by-id 查找 STM32 CDC
+    port: /dev/minipc
+    auto_detect_port: true
+    port_glob: /dev/serial/by-id/*STM32_Virtual_ComPort*
+    baud: 115200
+
+    # VisionToGimbal frame
+    frame_sof: 85               # 0x55
+    frame_id: 4                 # kNavigationControlId = 0x04
+    frame_eof: 255              # 0xFF
+    byte_order: little          # C++ packed struct on x86/ARM is little-endian
+
+    # 本车实测：只有 yaw_speed 能让底盘旋转，w_speed 无效。
+    # 且正命令产生负偏航，所以必须 invert_angular: true。
+    angular_z_target: yaw_speed   # w_speed | yaw_speed | both
+    gimbal_yaw_speed: 0.0         # fixed additive yaw_speed
+    scan_mode: false              # scan_mod_type default
+    scan_mode_topic: /scan_mode
+
+    protocol_max_speed: 2.0     # kMaxSpeed
+    max_linear: 0.9             # 安全速度限制；需高于 nav_params.max_linear
+    max_lateral: 0.5
+    max_angular: 1.8
+    invert_linear: true         # 本车实测：x_speed 正方向会让车倒着走，必须取反
+    invert_lateral: false
+    invert_angular: true        # 本车实测：正的 yaw_speed 产生负偏航，必须取反
+    cmd_timeout: 0.5            # send zero-speed frames after this
+    publish_rate: 50.0          # frame rate
+    publish_wheel_tf: false     # 保持TF唯一，此处不能发布keep false: FAST-LIO owns odom -> base_link
+
+    # 调试：每秒打印实际写出的 20 字节帧，便于和同学/厂商抓包逐字节对比
+    debug_frames: false
+    debug_frame_period: 1.0
