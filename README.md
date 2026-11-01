@@ -318,3 +318,10 @@ ai使用情况
 解决终端报错
 编写系统缺少的一些节点
 改良导航算法
+
+## 答辩演示
+
+- 在线演示（GitHub Pages）：https://minxinwang00.github.io/lidar-nav-system/
+- HTML 文件：[docs/defense.html](docs/defense.html)
+- 5 分钟讲稿与问答：[docs/答辩_5分钟_讲稿.md](docs/答辩_5分钟_讲稿.md)
+
