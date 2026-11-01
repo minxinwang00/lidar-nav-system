@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LiDAR 室内导航系统 · 5 分钟答辩</title>
+<style>
+  :root{
+    --bg:#0b1020; --panel:#121a2e; --panel2:#17213a;
+    --text:#eaf0ff; --muted:#9aa8c7; --line:#2a3757;
+    --green:#38d67a; --cyan:#46c8ff; --orange:#ffb454; --red:#ff6b6b;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:var(--bg);color:var(--text);
+    font-family:Inter,"Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;}
+  body{overflow:hidden}
+  #app{height:100%;display:flex;flex-direction:column}
+  header{height:52px;flex:0 0 52px;display:flex;align-items:center;gap:14px;
+    padding:0 22px;border-bottom:1px solid var(--line);background:rgba(11,16,32,.9)}
+  header .brand{font-weight:700;letter-spacing:.04em}
+  header .hint{color:var(--muted);font-size:12px}
+  header .spacer{flex:1}
+  #timer{font-family:var(--mono);font-size:18px;color:var(--cyan);
+    border:1px solid var(--line);padding:4px 10px;border-radius:8px}
+  #progress{height:4px;background:#0a0f1c;flex:0 0 4px}
+  #bar{height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--green));
+    transition:width .2s ease}
+  main{position:relative;flex:1;min-height:0}
+  .slide{position:absolute;inset:0;padding:38px 54px 34px;display:none;
+    flex-direction:column;gap:18px;overflow:auto}
+  .slide.active{display:flex;animation:in .22s ease}
+  @keyframes in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  h1{font-size:46px;line-height:1.1;margin:0}
+  h2{font-size:32px;line-height:1.15;margin:0 0 8px}
+  h3{font-size:19px;margin:0 0 8px;color:var(--cyan)}
+  p,li{font-size:18px;line-height:1.55;color:var(--text)}
+  .sub{font-size:20px;color:var(--muted);line-height:1.5}
+  .small{font-size:14px;color:var(--muted)}
+  .mono{font-family:var(--mono)}
+  .accent{color:var(--green)}
+  .orange{color:var(--orange)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:16px 18px;min-width:0}
+  .card.good{border-color:rgba(56,214,122,.35)}
+  .card.warn{border-color:rgba(255,180,84,.35)}
+  .card h3{margin-bottom:6px}
+  .card p,.card li{font-size:16px;line-height:1.5}
+  ul{margin:6px 0 0;padding-left:20px}
+  li{margin:5px 0}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+  .tag{font-size:13px;padding:5px 9px;border-radius:999px;background:#1b2742;
+    border:1px solid var(--line);color:#cfe0ff;white-space:nowrap}
+  .flow{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap}
+  .step{flex:1;min-width:130px;background:var(--panel2);border:1px solid var(--line);
+    border-radius:12px;padding:13px 12px;position:relative}
+  .step b{display:block;font-size:16px;margin-bottom:4px;color:var(--cyan)}
+  .step span{font-size:13px;color:var(--muted);line-height:1.4;display:block}
+  .arrow{align-self:center;color:var(--green);font-size:22px;font-weight:700}
+  .metric{font-family:var(--mono);font-size:30px;color:var(--green);line-height:1}
+  .metric-label{font-size:13px;color:var(--muted);margin-top:4px}
+  .big{font-size:22px;line-height:1.5}
+  .quote{border-left:3px solid var(--green);padding-left:14px;color:#d7e3ff}
+  .map-wrap{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:center}
+  .map{width:100%;max-height:440px;object-fit:contain;border-radius:12px;
+    border:1px solid var(--line);background:#fff}
+  .pill{display:inline-block;font-size:12px;padding:3px 8px;border-radius:999px;
+    background:rgba(56,214,122,.12);color:var(--green);border:1px solid rgba(56,214,122,.35)}
+  .pill.warn{background:rgba(255,180,84,.12);color:var(--orange);
+    border-color:rgba(255,180,84,.35)}
+  footer{height:46px;flex:0 0 46px;display:flex;align-items:center;gap:12px;
+    padding:0 22px;border-top:1px solid var(--line);color:var(--muted);
+    font-size:12px;background:rgba(11,16,32,.92)}
+  button{background:#1b2742;color:var(--text);border:1px solid var(--line);
+    border-radius:8px;padding:7px 12px;font-size:13px;cursor:pointer}
+  button:hover{border-color:var(--cyan)}
+  .page{font-family:var(--mono);color:var(--cyan)}
+  .cover{justify-content:center;gap:22px}
+  .cover h1{font-size:56px;max-width:1000px}
+  .cover .line{width:90px;height:4px;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:2px}
+  .qa li{margin:9px 0}
+  .qa b{color:var(--cyan)}
+  @media (max-width:980px){
+    .slide{padding:26px 24px}
+    h1{font-size:38px}.cover h1{font-size:42px}h2{font-size:26px}
+    .grid2,.grid3,.grid4,.map-wrap{grid-template-columns:1fr}
+    p,li{font-size:16px}
+    .map{max-height:300px}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="brand">LiDAR 室内导航系统</div>
+    <div class="hint">←/→ 翻页 · R 重置计时 · 5 分钟答辩</div>
+    <div class="spacer"></div>
+    <div id="timer">05:00</div>
+  </header>
+  <div id="progress"><div id="bar"></div></div>
+
+  <main id="deck">
+
+    <!-- 1 -->
+    <section class="slide active cover">
+      <div class="line"></div>
+      <h1>基于 Livox MID-360 的<br>室内导航系统</h1>
+      <p class="sub">驱动 · FAST-LIO 建图 · 2D 栅格 · AMCL 定位 · A*/DWA · 串口底盘 · Qt GUI</p>
+      <div class="tags">
+        <span class="tag">ROS 2 Humble</span>
+        <span class="tag">Ubuntu 22.04</span>
+        <span class="tag">C++ / Python</span>
+        <span class="tag">实车验证</span>
+      </div>
+      <p class="small">5 分钟答辩 · 姓名：__________ · 2026-11</p>
+    </section>
+
+    <!-- 2 -->
+    <section class="slide">
+      <h2>一、整体技术方案</h2>
+      <p class="sub">目标：从传感器到轮子，形成一条可实车运行的闭环链路。</p>
+      <div class="grid4">
+        <div class="card"><h3>感知</h3><p>Livox MID-360<br>10 Hz 点云 + IMU</p></div>
+        <div class="card"><h3>建图</h3><p>FAST-LIO<br>紧耦合 LiDAR-IMU</p></div>
+        <div class="card"><h3>定位</h3><p>map_server + AMCL<br>LIO 提供 odom</p></div>
+        <div class="card"><h3>决策/执行</h3><p>A* + DWA + 行为树<br>20 字节串口帧</p></div>
+      </div>
+      <div class="grid3" style="margin-top:4px">
+        <div class="card"><h3>为什么这样选</h3><p>MID-360 性价比高、自带 IMU；FAST-LIO 在室内弱纹理环境比纯 2D 激光更稳。</p></div>
+        <div class="card"><h3>模块化</h3><p>驱动、建图、定位、决策、底盘、GUI 独立包，便于定位问题和替换算法。</p></div>
+        <div class="card"><h3>可调试</h3><p>保留原始点云、局部代价、全局栅格、TF、节点状态和底盘串口诊断。</p></div>
+      </div>
+    </section>
+
+    <!-- 3 -->
+    <section class="slide">
+      <h2>二、系统流程与 TF</h2>
+      <div class="flow">
+        <div class="step"><b>Livox 驱动</b><span>/livox/lidar<br>/livox/imu</span></div>
+        <div class="arrow">→</div>
+        <div class="step"><b>FAST-LIO</b><span>/Odometry<br>/cloud_registered</span></div>
+        <div class="arrow">→</div>
+        <div class="step"><b>栅格 / 定位</b><span>/local_costmap<br>/scan → AMCL</span></div>
+        <div class="arrow">→</div>
+        <div class="step"><b>决策控制</b><span>A* → DWA<br>/plan → /cmd_vel</span></div>
+        <div class="arrow">→</div>
+        <div class="step"><b>底盘 MCU</b><span>串口二进制帧<br>速度闭环</span></div>
+      </div>
+      <div class="grid2" style="margin-top:6px">
+        <div class="card">
+          <h3>TF 链</h3>
+          <p class="mono" style="font-size:15px">map → odom → base_link</p>
+          <p class="mono" style="font-size:15px">odom → camera_init → body → livox_frame</p>
+          <p class="small">AMCL 负责 map→odom；lio_odom_bridge 负责 odom→base_link；FAST-LIO 发布 camera_init→body。</p>
+        </div>
+        <div class="card">
+          <h3>关键设计</h3>
+          <ul>
+            <li>导航里程计用 FAST-LIO，不用底盘指令积分。</li>
+            <li>AMCL 用点云投影的 /scan 做地图级修正。</li>
+            <li>GUI 同时监控 TF、节点和串口状态。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4 -->
+    <section class="slide">
+      <h2>三、建图与地图</h2>
+      <div class="map-wrap">
+        <img class="map" src="assets/occupancy_map_preview.png" alt="occupancy map preview">
+        <div>
+          <div class="grid2">
+            <div class="card"><div class="metric">763×764</div><div class="metric-label">栅格尺寸</div></div>
+            <div class="card"><div class="metric">0.05 m</div><div class="metric-label">分辨率</div></div>
+          </div>
+          <div class="card" style="margin-top:12px">
+            <h3>流程</h3>
+            <ul>
+              <li>启动 <span class="mono">mapping.launch.py</span></li>
+              <li>低速行驶，GUI 开始建图</li>
+              <li>保存为 pgm/yaml，导航端加载</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div class="grid3">
+        <div class="card good"><h3>高度带</h3><p>z/local_z：0.7~2.0 m，过滤地面和过低回波。</p></div>
+        <div class="card good"><h3>空洞填充</h3><p>被空闲格完全包围的未知块填为空地，避免稀疏点云被当成墙。</p></div>
+        <div class="card good"><h3>障碍去噪</h3><p>删除孤立单格和小障碍簇，保留连续墙线。</p></div>
+      </div>
+    </section>
+
+    <!-- 5 -->
+    <section class="slide">
+      <h2>四、定位与导航策略</h2>
+      <div class="grid3">
+        <div class="card"><h3>全局规划</h3><p>A* + 膨胀代价 + 离墙权重 + 路径平滑；<span class="mono">allow_unknown=false</span>。</p></div>
+        <div class="card"><h3>局部控制</h3><p>DWA 采样；动态障碍触发局部 A* 绕行；行为树负责恢复。</p></div>
+        <div class="card"><h3>到点判定</h3><p>距离 0.12 m + 朝向 0.35 rad + 稳定保持 1 s，避免“扫过目标”误判。</p></div>
+      </div>
+      <div class="grid2" style="margin-top:4px">
+        <div class="card warn">
+          <h3>问题：轨迹像一串 C</h3>
+          <p>DWA 只采样前进速度，大角度偏差时会用前进弧线“绕”到路径方向；到点转向时又有残余线速度。</p>
+        </div>
+        <div class="card good">
+          <h3>改法</h3>
+          <ul>
+            <li>航向偏差 &gt; 0.8 rad 先原地转；</li>
+            <li>到点转向时线速度立即归零；</li>
+            <li>增加路径切向评分和曲率惩罚。</li>
+          </ul>
+        </div>
+      </div>
+      <p class="quote">结果：起步/目标附近不再画圈，直道和转弯更连续。</p>
+    </section>
+
+    <!-- 6 -->
+    <section class="slide">
+      <h2>五、实车问题与解决</h2>
+      <div class="grid2">
+        <div class="card">
+          <h3>1. 底盘不动 / 串口变号</h3>
+          <p>ttyACM 编号会变化，导致 bridge 进入 fake 模式。改为 by-id + <span class="mono">/dev/minipc</span> udev 别名，并关闭静默降级。</p>
+        </div>
+        <div class="card">
+          <h3>2. 能发帧但车不走</h3>
+          <p>遥控器未切 NAV/自动模式。加入底盘诊断、串口监视和运动测试工具，先验证“帧→轮子”链路。</p>
+        </div>
+        <div class="card">
+          <h3>3. 方向反 / 车头偏 180°</h3>
+          <p>实测角度字段只有 <span class="mono">yaw_speed</span> 有效；线性、角速度取反；<span class="mono">base_to_body_yaw=π</span> 对齐车头。</p>
+        </div>
+        <div class="card">
+          <h3>4. 长廊定位跳变 / 打滑漂移</h3>
+          <p>GUI 增加“关闭全局重定位”；FAST-LIO 提高迭代与特征保留，关闭在线外参估计，降低打滑时的漂移。</p>
+        </div>
+      </div>
+      <div class="grid3" style="margin-top:2px">
+        <div class="card"><h3>RViz 看不到代价</h3><p>QoS：Volatile vs Transient Local，统一配置。</p></div>
+        <div class="card"><h3>未知格变“墙”</h3><p>空洞填充 + 去噪 + 只膨胀已知空闲格。</p></div>
+        <div class="card"><h3>误判到达</h3><p>距离 + 朝向 + 稳定时间三重确认。</p></div>
+      </div>
+    </section>
+
+    <!-- 7 -->
+    <section class="slide">
+      <h2>六、关键参数与取舍</h2>
+      <div class="grid4">
+        <div class="card"><div class="metric">0.18 m</div><div class="metric-label">车体半径</div></div>
+        <div class="card"><div class="metric">0.40 m</div><div class="metric-label">规划膨胀半径</div></div>
+        <div class="card"><div class="metric">0.50 m/s</div><div class="metric-label">最大线速度</div></div>
+        <div class="card"><div class="metric">1.10 rad/s</div><div class="metric-label">最大角速度</div></div>
+      </div>
+      <div class="grid2" style="margin-top:6px">
+        <div class="card">
+          <h3>为什么不是越大越好</h3>
+          <ul>
+            <li>光滑地面速度过高会空转，LIO 里程计漂移；</li>
+            <li>膨胀半径过小会贴墙，过大会堵窄通道；</li>
+            <li>前视距离过大会切内角，过小会左右摆。</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>调试顺序</h3>
+          <ol style="margin:6px 0 0;padding-left:20px">
+            <li>先验证串口/底盘运动；</li>
+            <li>再验证 TF 与里程计方向；</li>
+            <li>最后调规划膨胀、速度和到点判定。</li>
+          </ol>
+        </div>
+      </div>
+      <p class="quote">原则：先保证“车真的按预期动”，再追求“路径更漂亮”。</p>
+    </section>
+
+    <!-- 8 -->
+    <section class="slide">
+      <h2>七、完成情况</h2>
+      <div class="grid2">
+        <div class="card">
+          <h3>已完成</h3>
+          <ul>
+            <li><span class="pill">OK</span> Livox 驱动 + FAST-LIO 建图</li>
+            <li><span class="pill">OK</span> 2D 栅格、地图保存、空洞/噪声处理</li>
+            <li><span class="pill">OK</span> LIO + AMCL 定位与 TF 链</li>
+            <li><span class="pill">OK</span> A* + DWA + 行为树导航</li>
+            <li><span class="pill">OK</span> 底盘串口桥与运动测试</li>
+            <li><span class="pill">OK</span> Qt GUI、TF/节点诊断、重定位开关</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>仍需加强</h3>
+          <ul>
+            <li><span class="pill warn">局限</span> 长廊 AMCL 全局重定位不稳</li>
+            <li><span class="pill warn">局限</span> 光滑地面轮子打滑导致 LIO 漂移</li>
+            <li><span class="pill warn">局限</span> 缺少真实轮速编码器融合</li>
+            <li><span class="pill warn">局限</span> 实车视频待补充</li>
+          </ul>
+          <p class="small" style="margin-top:10px">实车底盘运动测试已通过：前进、转向均能产生实际运动，方向与命令一致。</p>
+        </div>
+      </div>
+      <div class="grid3" style="margin-top:4px">
+        <div class="card"><div class="metric">10</div><div class="metric-label">ROS 2 包</div></div>
+        <div class="card"><div class="metric">763×764</div><div class="metric-label">实车地图</div></div>
+        <div class="card"><div class="metric">11</div><div class="metric-label">Git 提交</div></div>
+      </div>
+    </section>
+
+    <!-- 9 -->
+    <section class="slide">
+      <h2>八、如何借助 AI</h2>
+      <div class="grid3">
+        <div class="card">
+          <h3>理解与检索</h3>
+          <p>快速梳理 10 个 ROS 包、TF 链、launch 参数和配置依赖，减少“全局搜索—猜测”的时间。</p>
+        </div>
+        <div class="card">
+          <h3>诊断与工具</h3>
+          <p>生成串口监视、旋转扫描、运动测试、TF/节点诊断脚本；把“车不动”拆成可验证的小步骤。</p>
+        </div>
+        <div class="card">
+          <h3>文档与复盘</h3>
+          <p>整理命令手册、参数说明、问题记录和提交历史，方便复现和交接。</p>
+        </div>
+      </div>
+      <div class="card" style="margin-top:6px">
+        <h3>我的使用边界</h3>
+        <ul>
+          <li>AI 给假设，<b>实车给结论</b>：每次改完必须编译、看 TF/话题、做运动测试。</li>
+          <li>不直接把 AI 建议当答案：参数要结合车体尺寸、地面和传感器安装验证。</li>
+          <li>保留失败记录：哪些方案试过、为什么放弃，比只保留最终参数更有价值。</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section class="slide">
+      <h2>九、总结与反思</h2>
+      <div class="grid3">
+        <div class="card good"><h3>系统集成</h3><p>导航不是单个算法，驱动、TF、时间戳、坐标方向、串口协议任何一层错都会表现成“算法不行”。</p></div>
+        <div class="card good"><h3>数据闭环</h3><p>先做可观测性：原始点云、代价地图、TF、底盘状态。能看见问题，才谈得上调参。</p></div>
+        <div class="card good"><h3>安全边界</h3><p>低速验证、急停、速度限幅、到点确认；宁可慢，不要失控。</p></div>
+      </div>
+      <div class="card" style="margin-top:6px">
+        <h3>下一步</h3>
+        <p>引入真实轮速/编码器与 LIO 融合；增加长廊场景的定位评估；补充实车视频和可重复实验数据；把参数标定流程脚本化。</p>
+      </div>
+      <p class="big" style="margin-top:10px">谢谢，欢迎老师和算法组同学提问。</p>
+    </section>
+
+    <!-- 11 backup -->
+    <section class="slide">
+      <h2>附：可能被问到的问题</h2>
+      <div class="grid2 qa">
+        <div class="card">
+          <ul>
+            <li><b>为什么用 FAST-LIO + AMCL？</b><br>LIO 提供高频、连续的 odom；AMCL 用地图像做全局修正。两者职责分离，便于定位问题。</li>
+            <li><b>为什么关闭全局重定位？</b><br>长廊弱特征，全局撒粒子容易跳变；关闭后用初始位姿 + 局部跟踪更稳。</li>
+            <li><b>为什么 DWA 会画 C？</b><br>只采样前进速度，大角度偏差时用弧线代替原地转；已加原地转、切向评分和曲率惩罚。</li>
+          </ul>
+        </div>
+        <div class="card">
+          <ul>
+            <li><b>空洞为什么能填成空地？</b><br>只填被空闲格完全包围、且不接触障碍和边界的未知连通块，避免填掉墙后盲区。</li>
+            <li><b>18 cm 半径怎么定膨胀？</b><br>规划膨胀 0.40 m，比半径多 0.22 m 余量；局部栅格膨胀 0.35 m。</li>
+            <li><b>最大风险？</b><br>打滑和缺少真实轮速反馈；下一步做轮速融合和场地特征增强。</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <button onclick="prev()">← 上一页</button>
+    <button onclick="next()">下一页 →</button>
+    <button onclick="resetTimer()">重置计时</button>
+    <span class="spacer" style="flex:1"></span>
+    <span id="page" class="page">1 / 11</span>
+  </footer>
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const bar = document.getElementById('bar');
+  const page = document.getElementById('page');
+  const timerEl = document.getElementById('timer');
+  let idx = 0, remaining = 300, running = false, tid = null;
+
+  function show(i){
+    idx = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((s, k) => s.classList.toggle('active', k === idx));
+    page.textContent = (idx + 1) + ' / ' + slides.length;
+    bar.style.width = ((idx + 1) / slides.length * 100) + '%';
+  }
+  function next(){ startTimer(); show(idx + 1); }
+  function prev(){ startTimer(); show(idx - 1); }
+  function fmt(s){
+    s = Math.max(0, s);
+    return String(Math.floor(s / 60)).padStart(2, '0') + ':' +
+           String(s % 60).padStart(2, '0');
+  }
+  function renderTimer(){
+    timerEl.textContent = fmt(remaining);
+    timerEl.style.color = remaining <= 30 ? '#ff6b6b' : '#46c8ff';
+  }
+  function startTimer(){
+    if (running) return;
+    running = true;
+    tid = setInterval(() => {
+      if (remaining > 0) remaining--;
+      renderTimer();
+      if (remaining <= 0) { clearInterval(tid); tid = null; running = false; }
+    }, 1000);
+  }
+  function resetTimer(){
+    if (tid) clearInterval(tid);
+    tid = null; running = false; remaining = 300; renderTimer();
+  }
+  document.addEventListener('keydown', (e) => {
+    if (['ArrowRight','PageDown',' '].includes(e.key)) { e.preventDefault(); next(); }
+    else if (['ArrowLeft','PageUp'].includes(e.key)) { e.preventDefault(); prev(); }
+    else if (e.key === 'r' || e.key === 'R') { resetTimer(); }
+  });
+  renderTimer();
+  show(0);
+</script>
+</body>
+</html>
