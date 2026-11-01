@@ -1,0 +1,10 @@
+li_init_manager:
+  ros__parameters:
+    bag_dir: ~/nav_system_ws/calib_bags
+    bag_duration: 90.0
+    lidar_topic: /livox/lidar
+    imu_topic: /livox/imu
+    result_file: ~/nav_system_ws/calib_bags/li_init_result.txt
+    fastlio_input: ~/nav_system_ws/src/mapping/FAST_LIO/config/mid360.yaml
+    fastlio_output: ~/nav_system_ws/src/mapping/FAST_LIO/config/mid360_calibrated.yaml
+    quat_order: xyzw
