@@ -2,7 +2,7 @@
 
 基于 **Livox MID-360 + FAST-LIO + ROS 2 Humble** 的四层室内导航系统，包含激光雷达驱动、3D 建图、2D 栅格投影、定位、路径规划、DWA 控制、串口底盘桥和 Qt 操作界面。
 
-> 实机演示视频请放在 [`video/`](video/) 目录，上传后可把文件名改为 `demo.mp4`。
+
 
 ## 导航地图
 
@@ -241,22 +241,16 @@ map
 
 ### FAST-LIO：`src/mapping/FAST_LIO/config/mid360.yaml`
 
-```yaml
-point_filter_num: 2
-max_iteration: 5
-filter_size_surf: 0.2
-filter_size_map: 0.2
-extrinsic_est_en: false
-acc_cov: 0.1
-gyr_cov: 0.1
-blind: 0.5
-```
 
-目的：光滑地面/弱特征环境下保留更多结构点，提高配准稳定性；关闭在线外参估计，避免打滑时被 IMU 噪声带偏。
+extrinsic_est_en: false
+blind: 0.5
+
+
+
 
 ### 栅格投影：`src/mapping/grid_mapping/config/grid_params.yaml`
 
-```yaml
+
 min_range: 1.0
 z_min: 0.7
 z_max: 2.0
@@ -268,65 +262,19 @@ fill_enclosed_unknown: true
 despeckle_obstacles: true
 obstacle_min_neighbors: 1
 obstacle_min_cluster_cells: 3
-```
+
 
 - 过滤车体近处和过低/过高回波；
 - 被空闲格完全包围的未知空洞填成空地，避免稀疏点云被当成墙；
 - 删除孤立单格和小障碍簇，保留连续墙线；
 - 只膨胀已知空闲格，避免未观测区域变成大片紫色假障碍。
 
-### 导航参数：`src/navigation/bringup/config/nav_params.yaml`
 
-```yaml
-robot_radius: 0.18
-inflation_radius: 0.40
-smoothing_clearance: 0.28
-max_linear: 0.50
-max_angular: 1.10
-max_dv: 0.18
-max_dw: 0.70
-goal_tolerance: 0.12
-goal_yaw_tolerance: 0.35
-goal_hold_time: 1.0
-goal_slow_radius: 0.6
-rotate_in_place_error: 0.8
-path_heading_weight: 0.15
-curvature_weight: 0.05
-allow_unknown: false
-```
 
-- 车体半径按 18 cm 配置；
-- 终点前降速，到点后先对齐朝向并稳定 1 秒；
-- 航向偏差超过约 46° 时先原地转，避免 DWA 走前进弧线形成连续 C 形轨迹；
-- 增加路径切向评分和曲率惩罚，减少左右摆动。
 
-### 底盘：`src/navigation/chassis/config/chassis.yaml`
 
-```yaml
-protocol: binary
-port: /dev/minipc
-angular_z_target: yaw_speed
-invert_linear: true
-invert_angular: true
-max_linear: 0.9
-max_angular: 1.8
-cmd_timeout: 0.5
-publish_rate: 50.0
-```
 
-MiniPC 二进制帧为 20 字节，`struct <BBffff?B`：
 
-```text
-SOF(0x55) ID(0x04) x_speed y_speed yaw_speed w_speed scan_mode EOF(0xFF)
-```
-
-### AMCL：`src/navigation/bringup/config/amcl_params.yaml`
-
-- 差速运动模型；
-- 粒子数 500~3000；
-- `update_min_d: 0.10`、`update_min_a: 0.10`；
-- 激光范围 0.2~12 m，90 束；
-- 可由 GUI 关闭全局重定位。
 
 ### 启动参数
 
@@ -341,16 +289,14 @@ chassis_angular_target: yaw_speed
 chassis_invert_linear: true
 ```
 
-## Qt 控制台
+实际问题排查过程
 
-`src/GUI/nav_gui` 提供：
+底盘无法驱动：
+排查了串口通信协议
+fsatlio是否拉起和正常发布TF变换
+底盘桥接权限
+遥控器
 
-- 地图显示、缩放、点击发送目标；
-- 建图开始/结束/保存；
-- 设置初始位姿、全局重定位、关闭/启用全局重定位；
-- 取消目标、重新规划、急停、解除急停、扫描模式；
-- TF 树诊断和所有节点运行状态；
-- 节点日志与常用命令帮助。
 
 ## 已知限制
 
@@ -360,19 +306,15 @@ chassis_invert_linear: true
 - `/wheel_odom` 不是高精度轮速反馈，导航主要使用 FAST-LIO 的 `/Odometry`；
 - 底盘必须处于遥控器 NAV/自动模式，否则串口帧不会被执行。
 
-## 详细文档
 
-- [全流程使用手册](docs/全流程使用手册.md)
-- [底盘诊断与运动测试](docs/底盘诊断与运动测试.md)
-- [底盘对比排查命令手册](docs/底盘对比排查命令手册.md)
-- [光滑地面防滑与里程计](docs/光滑地面防滑与里程计.md)
 
-## 实机视频
 
-视频文件请上传到：
 
-```text
-video/demo.mp4
-```
 
-当前目录用 `.gitkeep` 占位，方便先提交空文件夹。
+ai使用情况
+
+
+在把各个开源文件补充依赖等使用了ai
+解决终端报错
+编写系统缺少的一些节点
+改良导航算法
