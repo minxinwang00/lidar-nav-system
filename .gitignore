@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# ROS 2 / colcon
+build/
+install/
+log/
+*.bag
+*.db3
+*.mcap
+*.metadata
+
+# Runtime logs and generated point clouds
+**/Log/*.txt
+**/PCD/*.pcd
+
+# Editors
+.vscode/
+.idea/
+
+# OS
+.DS_Store
