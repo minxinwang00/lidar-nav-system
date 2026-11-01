@@ -1,0 +1,35 @@
+pointcloud_to_grid:
+  ros__parameters:
+    cloud_topic: /cloud_registered
+    odom_topic: /Odometry
+    map_frame: map
+    resolution: 0.05         # local costmap cell size [m]
+    local_size: 8.0           # rolling window side length [m]
+    max_range: 12.0           # ignore points farther than this [m]
+    # 忽略车体自身/近处噪声；太小会把车身或安装件当成障碍物
+    min_range: 1.0
+    z_min: 0.7               # height band above the sensor [m]
+    z_max: 2.0
+    # 局部代价地图单独高度带：local_z_min 才是局部地图实际使用的下限，
+    # 只改 z_min 不会影响 /local_costmap。
+    local_z_min: 0.7
+    local_z_max: 2.0
+    subsample: 2              # 降采样步长keep every N-th point
+    max_points: 4000          # 只处理身边8*8内的最大点数
+    inflation_radius: 0.35    # 障碍物膨胀半径local cost inflation [m] (>= robot radius)
+    # false：只膨胀已知空闲格，未知格保持 -1；避免大片未观测区域变成紫色假障碍
+    inflate_unknown: false
+    # 被空闲格完全包围的未知块视为空地，避免稀疏点云空洞被规划器当成墙
+    fill_enclosed_unknown: true
+    # 删除离散孤立障碍点/过小障碍簇；连续墙线会保留
+    despeckle_obstacles: true
+    obstacle_min_neighbors: 1      # 8邻域内至少几个障碍邻居，1=只删完全孤立单格
+    obstacle_min_cluster_cells: 3  # 小于该格数的连通障碍簇整簇删除
+    global_resolution: 0.05   # saved /grid_map/global cell size [m]
+    process_rate: 10.0
+    global_publish_rate: 1.0
+    max_global_cells: 2000000
+    save_dir: ~/nav_system_ws/src/mapping/maps
+    map_name: occupancy_map
+    mapping_active_on_start: true   # 启动即累积全局地图
+    versioned_on_stop: true         # 结束建图时保存带时间戳的新地图
